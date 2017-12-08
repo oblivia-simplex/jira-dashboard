@@ -1,4 +1,5 @@
 import jira
+from libdash.displayfuncs import *
 import math
 import curses
 from libdash.creds import *
@@ -8,6 +9,12 @@ import datetime
 # convenience functions for issues
 def updated(issue):
   return issue.fields.updated.split('T')[0]
+
+def assignee(issue):
+  try:
+    return issue.fields.assignee.name
+  except AttributeError:
+    return "UNASSIGNED"
 
 def status(issue):
   try:
@@ -25,13 +32,20 @@ def summary(issue):
 def gap(sample, string, plus=2):
   return ' '*((len(sample) - len(string)) + plus)
 
-def format_issue(issue):
-  s = "{}{}{}  {}{}{}".format(key(issue),
-                              gap('VULN-XXXXX', key(issue)),
-                              updated(issue),
-                              status(issue),
-                              gap('In Code Review', status(issue)),
-                              summary(issue))
+def format_issue(issue, hide_assigned=False):
+  s = ""
+  if not hide_assigned:
+    s += "{}:{}".format(assignee(issue), gap("xxxxxxxxxxxxxxx", assignee(issue)))
+    
+  stat = status(issue)
+  s += "{}{}{}  {}{}{}".format(key(issue),
+                               gap('VULN-XXXXX', key(issue)),
+                               updated(issue),
+                               stat,
+                               gap('In Code Review', stat),
+                               summary(issue))
+  if stat == "In Progress":
+    s = colourize(s, "green")
   return s
 
 
@@ -39,17 +53,20 @@ def format_issue(issue):
 class Board (object):
 
   def __init__(self, only_mine=True):
+    self.only_mine = only_mine
     self.query_prefix = "assignee = currentUser() AND" if only_mine else ""
-    self.my_unresolved_issues_query = """
-    NOT (status = "Resolved" OR status = "Closed") 
-    """
+    self.my_unresolved_issues_query = """ NOT (status = "Resolved" OR status = "Closed") """
     self.order_results = "ORDER BY updated"
     self.url = URL
     self.auth = (USERNAME, PASSWORD)
     self.jira = jira.JIRA(self.url, basic_auth=self.auth)
     self.issues = []
 
-  def search_issues(self, query):
+  def search_issues(self, query=None):
+    if query is None:
+      query = self.my_unresolved_issues_query
+    query = self.compose_query(query)
+    dbgprint("query:",query)
     issues = self.jira.search_issues(query, maxResults=None)
     return issues
 
@@ -57,11 +74,6 @@ class Board (object):
     return ' '.join((self.query_prefix, query, self.order_results))
   
   def print_issues_from_query(self, query):
-    if query is None:
-      query = self.my_unresolved_issues_query
-    query = self.compose_query(query)
-    dbgprint("query:",query)
-    exit(1)
     issues = self.search_issues(query)
     r = self.print_issues(issues)
     return r
@@ -69,7 +81,9 @@ class Board (object):
   def print_issues(self, issues):
     report = []
     for issue in issues:
-      report.append(format_issue(issue))
+      report.append(format_issue(issue, self.only_mine))
+    if not report:
+      return []  
     maxwidth = max(len(row) for row in report)
     border = '-=' * math.ceil(maxwidth/2)
     print(border)

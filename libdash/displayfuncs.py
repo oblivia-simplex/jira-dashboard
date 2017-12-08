@@ -7,12 +7,6 @@ ATTRIBUTES = ["name", "total", "frequency", "average"]
 COLOUR_ON = True
 RAINBOW = ["yellow","green","blue","cyan","magenta","red"]
 
-try:
-  if os.path.exists("/tmp/.pedant2_monochrome"):
-    with open("/tmp/.pedant2_monochrome", "r") as fd:
-      COLOUR_ON = bool(fd.read.strip())
-except:
-  pass
 
 def colour(hue, shade="dark"):
   global COLOUR_ON
