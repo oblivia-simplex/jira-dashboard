@@ -6,6 +6,7 @@ a very simple cli interface to replace the godawful jira dashboard gui
 ```
 USERNAME = "sallywhateverface"
 PASSWORD = "a very secure password, on which your company's security depends"
+URL = "https://the.url.to_your_jira.site"
 ```
 
 If you fork this repo, of course, it goes without saying that you should

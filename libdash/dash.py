@@ -43,7 +43,7 @@ class Board (object):
     assignee = currentUser() AND NOT (status = "Resolved" OR status = "Closed") 
     ORDER BY updated
     """
-    self.url = "https://jira.corp.tenablesecurity.com"
+    self.url = URL
     self.auth = (USERNAME, PASSWORD)
     self.jira = jira.JIRA(self.url, basic_auth=self.auth)
     self.issues = []
