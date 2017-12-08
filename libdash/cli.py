@@ -14,7 +14,11 @@ def main ():
                         metavar="<query>",
                         default=None,
                         help="Query in JQL. If none is supplied, the default, which fetches all unfinished tickets assigned to you, is used.")
+    parser.add_argument("-c", "--colour",
+                        action="store_true",
+                        default=False,
+                        help="Colourize things. Make them pretty.")
     args = parser.parse_args()
 
-    dash.main(args.query, only_mine=(not args.all))
+    dash.main(args.query, only_mine=(not args.all), colour=args.colour)
     

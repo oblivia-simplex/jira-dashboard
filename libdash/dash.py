@@ -32,7 +32,7 @@ def summary(issue):
 def gap(sample, string, plus=2):
   return ' '*((len(sample) - len(string)) + plus)
 
-def format_issue(issue, hide_assigned=False):
+def format_issue(issue, hide_assigned=False, colour=False):
   s = ""
   if not hide_assigned:
     s += "{}:{}".format(assignee(issue), gap("xxxxxxxxxxxxxxx", assignee(issue)))
@@ -44,15 +44,16 @@ def format_issue(issue, hide_assigned=False):
                                stat,
                                gap('In Code Review', stat),
                                summary(issue))
-  if stat == "In Progress":
-    s = colourize(s, "green")
+  if colour:
+    if stat == "In Progress":
+      s = colourize(s, "green")
   return s
 
 
 
 class Board (object):
 
-  def __init__(self, only_mine=True):
+  def __init__(self, only_mine=True, colour=False):
     self.only_mine = only_mine
     self.query_prefix = "assignee = currentUser() AND" if only_mine else ""
     self.my_unresolved_issues_query = """ NOT (status = "Resolved" OR status = "Closed") """
@@ -61,6 +62,7 @@ class Board (object):
     self.auth = (USERNAME, PASSWORD)
     self.jira = jira.JIRA(self.url, basic_auth=self.auth)
     self.issues = []
+    self.colour = colour
 
   def search_issues(self, query=None):
     if query is None:
@@ -81,7 +83,7 @@ class Board (object):
   def print_issues(self, issues):
     report = []
     for issue in issues:
-      report.append(format_issue(issue, self.only_mine))
+      report.append(format_issue(issue, self.only_mine, self.colour))
     if not report:
       return []  
     maxwidth = max(len(row) for row in report)
@@ -115,7 +117,7 @@ class Display (object):
 
     # TODO
 
-def main(query=None, only_mine=True):
-  board = Board(only_mine=only_mine)
+def main(query=None, only_mine=True, colour=False):
+  board = Board(only_mine=only_mine, colour=colour)
   board.print_issues_from_query(query)
 
