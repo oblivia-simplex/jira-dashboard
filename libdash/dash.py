@@ -56,7 +56,8 @@ class Board (object):
   def __init__(self, only_mine=True, colour=False):
     self.only_mine = only_mine
     self.query_prefix = "assignee = currentUser() AND" if only_mine else ""
-    self.my_unresolved_issues_query = """ NOT (status = "Resolved" OR status = "Closed") """
+    end_words = ["Resolved", "Closed", "Done"]
+    self.my_unresolved_issues_query = "NOT (" + ' OR '.join("status = "+w for w in end_words) + ")"
     self.order_results = "ORDER BY updated"
     self.url = URL
     self.auth = (USERNAME, PASSWORD)
