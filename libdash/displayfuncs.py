@@ -39,7 +39,7 @@ def colour(hue, shade="dark"):
     hue, shade = 'white', 'dark'
   return "\x1b["+shades[shade]+";"+hues[hue]+"m"
 
-DEBUG = 0
+DEBUG = 1
 DBGLOG = []
 
 def dbgprint(*args, **kwargs): #bullet='+', errprint=True):

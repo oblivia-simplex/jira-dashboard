@@ -38,27 +38,30 @@ def format_issue(issue):
 
 class Board (object):
 
-  def __init__(self):
+  def __init__(self, only_mine=True):
+    self.query_prefix = "assignee = currentUser() AND" if only_mine else ""
     self.my_unresolved_issues_query = """
-    assignee = currentUser() AND NOT (status = "Resolved" OR status = "Closed") 
-    ORDER BY updated
+    NOT (status = "Resolved" OR status = "Closed") 
     """
+    self.order_results = "ORDER BY updated"
     self.url = URL
     self.auth = (USERNAME, PASSWORD)
     self.jira = jira.JIRA(self.url, basic_auth=self.auth)
     self.issues = []
 
   def search_issues(self, query):
-    self.issues = self.jira.search_issues(query, maxResults=None)
-    return self.issues
+    issues = self.jira.search_issues(query, maxResults=None)
+    return issues
 
-  def fetch_my_unresolved_issues(self):
-    self.search_issues('assignee = currentUser() AND NOT (status = "Resolved" OR status = "Closed") ORDER BY updated')
-    return self.issues
-
+  def compose_query(self, query):
+    return ' '.join((self.query_prefix, query, self.order_results))
+  
   def print_issues_from_query(self, query):
     if query is None:
       query = self.my_unresolved_issues_query
+    query = self.compose_query(query)
+    dbgprint("query:",query)
+    exit(1)
     issues = self.search_issues(query)
     r = self.print_issues(issues)
     return r
@@ -98,7 +101,7 @@ class Display (object):
 
     # TODO
 
-def main(query=None):
-  board = Board()
+def main(query=None, only_mine=True):
+  board = Board(only_mine=only_mine)
   board.print_issues_from_query(query)
 
