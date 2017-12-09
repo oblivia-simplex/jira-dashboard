@@ -42,7 +42,7 @@ def format_issue(issue, hide_assigned=False, colour=False):
                                gap('VULN-XXXXX', key(issue)),
                                updated(issue),
                                stat,
-                               gap('In Code Review', stat),
+                               gap('Integration Review', stat),
                                summary(issue))
   if colour:
     if stat == "In Progress":
